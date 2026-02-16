@@ -247,6 +247,54 @@ function isValidDDMVersionString() {
 }
 
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Load Translations based on system language
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+function loadTranslations() {
+    local systemLocale=$(defaults read -g AppleLocale 2>/dev/null || echo "en_US")
+    local langCode="${systemLocale:0:2}"
+    local scriptDirectory="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    local langFile="${scriptDirectory}/locales/${langCode}.zsh"
+
+    # Load English baseline (always available)
+    if [[ -f "${scriptDirectory}/locales/en.zsh" ]]; then
+        source "${scriptDirectory}/locales/en.zsh"
+        declare -A englishTranslations=("${(@kv)translations}")
+    else
+        error "Missing English translation file: ${scriptDirectory}/locales/en.zsh"
+        return 1
+    fi
+
+    # Load target language if not English
+    if [[ "${langCode}" != "en" && -f "${langFile}" ]]; then
+        source "${langFile}"
+        info "Loaded translations for language: ${langCode}"
+
+        # Check for missing translations and use English fallback
+        for key in "${(@k)englishTranslations}"; do
+            if [[ -z "${translations[$key]}" ]]; then
+                warning "Missing translation for '${key}' in ${langCode}, using English"
+                translations[$key]="${englishTranslations[$key]}"
+            fi
+        done
+    else
+        if [[ "${langCode}" != "en" ]]; then
+            notice "Language '${langCode}' not available, using English"
+        fi
+        # Use English translations
+        declare -A translations=("${(@kv)englishTranslations}")
+    fi
+
+    # Merge translations into preferenceConfiguration
+    # Only override the string keys that have translations
+    for key in "${(@kv)translations}"; do
+        if [[ -n "${preferenceConfiguration[$key]}" ]]; then
+            preferenceConfiguration[$key]="string|${translations[$key]}"
+        fi
+    done
+}
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # Preference Loading and Management
