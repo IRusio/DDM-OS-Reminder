@@ -1355,6 +1355,8 @@ preFlight "Current Logged-in User First Name (ID): ${loggedInUserFirstname} (${l
 #
 ####################################################################################################
 
+loadTranslations
+
 loadPreferenceOverrides
 
 validatePreferenceLoad
