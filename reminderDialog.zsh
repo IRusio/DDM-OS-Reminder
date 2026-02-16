@@ -288,7 +288,7 @@ function loadTranslations() {
 
     # Merge translations into preferenceConfiguration
     # Only override the string keys that have translations
-    for key in "${(@kv)translations}"; do
+    for key in "${(@k)translations}"; do
         if [[ -n "${preferenceConfiguration[$key]}" ]]; then
             preferenceConfiguration[$key]="string|${translations[$key]}"
         fi
