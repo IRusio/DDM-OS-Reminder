@@ -466,6 +466,7 @@ lastMessageTrimmed="${lastMessageLine//[[:space:]]/}"
 echo '# Extract embedded locale files to /tmp' > "${tmpScript}"
 echo 'localeDir="/tmp/ddm-os-reminder-locales-$$"' >> "${tmpScript}"
 echo 'mkdir -p "${localeDir}"' >> "${tmpScript}"
+echo 'trap "rm -rf \"\${localeDir}\" 2>/dev/null" EXIT' >> "${tmpScript}"
 echo '' >> "${tmpScript}"
 
 for localeFile in "${projectDir}/locales"/*.zsh; do
