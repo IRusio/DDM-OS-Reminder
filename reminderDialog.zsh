@@ -252,7 +252,7 @@ function isValidDDMVersionString() {
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 function loadTranslations() {
-    local systemLocale=$(defaults read -g AppleLocale 2>/dev/null || echo "en_US")
+    local systemLocale="${DEMO_LANG:-$(defaults read -g AppleLocale 2>/dev/null || echo "en_US")}"
     local langCode="${systemLocale:0:2}"
     local scriptDirectory="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local langFile="${scriptDirectory}/locales/${langCode}.zsh"
@@ -1384,6 +1384,17 @@ preFlight "Complete"
 if [[ "${1}" == "demo" ]]; then
 
     notice "Demo mode enabled"
+
+    # Check if a language code was specified as second parameter
+    if [[ -n "${2}" ]]; then
+        demoLangOverride="${2}"
+        notice "Demo language override: ${demoLangOverride}"
+        # Temporarily override AppleLocale for this demo run
+        export DEMO_LANG="${demoLangOverride}"
+        # Reload translations with the demo language
+        loadTranslations
+        loadPreferenceOverrides
+    fi
 
     # Installed vs Required Version
     installedmacOSVersion=$( sw_vers -productVersion )
