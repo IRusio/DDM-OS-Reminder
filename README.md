@@ -29,8 +29,34 @@ While Apple’s Declarative Device Management (DDM) provides Mac Admins with a p
 - **Intelligently Intrusive**: The reminder dialog is designed to be informative without being disruptive, first checking whether a user is in an online meeting — via an allowlist of approved apps — before displaying the dialog, so users can remain productive while still being reminded to update.
 - **Logging**: The script logs its actions to your specified log file, allowing Mac Admins to monitor its activity and troubleshoot as necessary.
 - **Demonstration Mode**: A built-in `demo` mode allows Mac Admins to test the appearance and functionality of the reminder dialog with ease: `zsh reminderDialog.zsh demo`.
+- **Multilingual Support**: Automatically detects and displays messages in the user's configured language (currently English and Polish, with easy extensibility for additional languages).
 
 <img src="images/ddmOSReminder_Demo.png" alt="A built-in 'demo' mode allows Mac Admins to test the appearance and functionality of the reminder dialog with ease." width="500"/>
+
+## Internationalization
+
+DDM OS Reminder automatically detects your Mac's configured language and displays messages accordingly.
+
+### Supported Languages
+- **English** (en) - Default/fallback language
+- **Polish** (pl) - Polski
+
+### How It Works
+The script detects the system language from `AppleLocale` settings and loads the appropriate translation file from the `locales/` directory. If a translation is unavailable, it falls back to English.
+
+### MDM Overrides
+Administrators can still override any message via Configuration Profile/plist, regardless of the detected language. This allows for organization-specific wording when needed.
+
+### Adding New Languages
+Want to contribute a translation? See [locales/README.md](locales/README.md) for detailed instructions on adding new languages.
+
+### Testing Languages
+Use demo mode to test different languages:
+```bash
+zsh reminderDialog.zsh demo           # Uses system language
+zsh reminderDialog.zsh demo pl        # Forces Polish
+zsh reminderDialog.zsh demo en        # Forces English
+```
 
 ## Support
 
