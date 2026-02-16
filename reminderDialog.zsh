@@ -255,14 +255,26 @@ function loadTranslations() {
     local systemLocale="${DEMO_LANG:-$(defaults read -g AppleLocale 2>/dev/null || echo "en_US")}"
     local langCode="${systemLocale:0:2}"
     local scriptDirectory="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    local langFile="${scriptDirectory}/locales/${langCode}.zsh"
+    local localeBaseDir=""
+
+    # Detect locale directory: check /tmp first (for assembled script), fall back to development directory
+    if [[ -d "/tmp/ddm-os-reminder-locales-$$" ]]; then
+        localeBaseDir="/tmp/ddm-os-reminder-locales-$$"
+    elif [[ -d "${scriptDirectory}/locales" ]]; then
+        localeBaseDir="${scriptDirectory}/locales"
+    else
+        error "No locale directory found in /tmp or ${scriptDirectory}/locales"
+        return 1
+    fi
+
+    local langFile="${localeBaseDir}/${langCode}.zsh"
 
     # Load English baseline (always available)
-    if [[ -f "${scriptDirectory}/locales/en.zsh" ]]; then
-        source "${scriptDirectory}/locales/en.zsh"
+    if [[ -f "${localeBaseDir}/en.zsh" ]]; then
+        source "${localeBaseDir}/en.zsh"
         declare -A englishTranslations=("${(@kv)translations}")
     else
-        error "Missing English translation file: ${scriptDirectory}/locales/en.zsh"
+        error "Missing English translation file: ${localeBaseDir}/en.zsh"
         return 1
     fi
 

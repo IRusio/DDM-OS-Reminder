@@ -410,7 +410,7 @@ echo
 echo "🔧 Inserting ${messageScript##*/} into ${baseScript##*/}  …"
 
 # patchedMessage=$(mktemp)
-patchedMessage=$(mktemp -t patchedMessage)
+patchedMessage=$(mktemp -t patchedMessageXXXXXX)
 
 # First: comment out any lines that append to ${scriptLog}
 sed 's/| tee -a "\${scriptLog}"/# | tee -a "\${scriptLog}"/' "${messageScript}" \
@@ -462,6 +462,27 @@ rm -f "${patchedMessage}.stage1"
 lastMessageLine=$(tail -n 1 "${patchedMessage}")
 lastMessageTrimmed="${lastMessageLine//[[:space:]]/}"
 
+# Embed locale files into tmpScript before baseScript
+echo '# Extract embedded locale files to /tmp' > "${tmpScript}"
+echo 'localeDir="/tmp/ddm-os-reminder-locales-$$"' >> "${tmpScript}"
+echo 'mkdir -p "${localeDir}"' >> "${tmpScript}"
+echo '' >> "${tmpScript}"
+
+for localeFile in "${projectDir}/locales"/*.zsh; do
+  [[ -f "${localeFile}" ]] || continue
+  localeName="$(basename "${localeFile}")"
+
+  # Skip validate-translations.zsh
+  [[ "${localeName}" == "validate-translations.zsh" ]] && continue
+
+  echo "cat > \"\${localeDir}/${localeName}\" <<'ENDOFLOCALE_${localeName}'" >> "${tmpScript}"
+  cat "${localeFile}" >> "${tmpScript}"
+  echo "ENDOFLOCALE_${localeName}" >> "${tmpScript}"
+  echo '' >> "${tmpScript}"
+done
+
+echo '' >> "${tmpScript}"
+
 {
   inBlock=false
   prevLine=""
@@ -488,7 +509,7 @@ lastMessageTrimmed="${lastMessageLine//[[:space:]]/}"
 
     prevLine="$line"
   done < "${baseScript}"
-} > "${tmpScript}"
+} >> "${tmpScript}"
 
 rm -f "${patchedMessage}"
 
